@@ -1,0 +1,47 @@
+CODE;NAME
+101;San Ignacio
+102;Elorrieta
+103;Ibarrekolanda
+104;Deusto
+105;La Ribera
+106;Arangoiti
+107;Diseminado
+201;Castaños
+202;Matiko
+203;Ciudad Jardin
+204;Uribarri
+205;Zurbaran
+206;Arabella
+207;Diseminado
+301;Otxarkoaga
+302;Txurdinaga
+303;Diseminado
+401;Begoña
+402;Santutxu
+403;Bolueta
+501;Casco Viejo
+502;Iturralde
+503;Solokoetxe
+504;Atxuri
+505;La Peña
+506;Bilbao la vieja
+507;San Francisco
+508;Zabala
+509;San Adrian
+510;Diseminado
+511;Miribilla
+601;Abando
+602;Indautxu
+701;ametzola
+702;Iralabarri
+703;Errekaldeberri
+704;Larraskitu
+705;Uretamendi
+706;Iturrigorri-Peñascal
+707;Diseminado
+801;Basurtu
+802;Olabeaga
+803;Masustegi-Monte Caramelo
+804;Altamira
+805;Zorrotza
+806;Diseminado

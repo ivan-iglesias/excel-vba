@@ -9,14 +9,16 @@ Option Explicit
 '
 ' RETURN: Array
 '
-Public Function ArrayInitialize(ByVal pLength, _
-                                ByVal pValue As Variant) As Variant
+Public Function ArrayInitialize(ByVal pLength As Long, _
+                                ByVal pValue As Variant) As Variant()
 
-    Dim myArray(0 To pLength) As Variant
+    Dim myArray() As Variant
     Dim i As Long
 
+    ReDim myArray(0 To pLength) As Variant
+
     For i = 0 To pLength
-        myArray(i) = Array(i + 1, pValue)
+        myArray(i) = pValue
     Next
 
     ArrayInitialize = myArray
@@ -24,15 +26,30 @@ End Function
 
 
 '
-' Join strings from a collection.
+' Join array values.
 '
-' pCollection: Collection of strings
-' pDelimiter: Delimiter between strings
+' pArray: Array
+' pDelimiter (optional): Delimiter between values
+'
+' RETURN: String
+'
+Public Function ArrayToString(ByRef pArray() As Variant, _
+                              Optional ByVal pDelimiter As String = ";") As String
+
+    ArrayToString = Join(pArray, pDelimiter)
+End Function
+
+
+'
+' Join values from a collection.
+'
+' pCollection: Collection of strings or numbers
+' pDelimiter (optional): Delimiter between values
 '
 ' RETURN: String
 '
 Public Function CollectionToString(ByVal pCollection As Collection, _
-                                   ByVal pDelimiter As String) As String
+                                   Optional ByVal pDelimiter As String = ";") As String
 
     Dim item As Variant
 
@@ -58,7 +75,7 @@ Public Sub CollectionMerge(ByRef collectionA As Collection, _
     Dim i As Long
 
     For i = 1 To collectionB.Count
-        collectionA.add collectionB.item(i)
+        collectionA.Add collectionB.item(i)
     Next i
 End Sub
 
@@ -181,7 +198,7 @@ Public Function ExcelCreate(ByVal pFile As String, _
 
     If pNumberSheets > 0 Then
         Application.SheetsInNewWorkbook = pNumberSheets
-        Application.Workbooks.add
+        Application.Workbooks.Add
         Workbooks(idxExcel).SaveAs FileName:=pFile
         ExcelCreate = True
     End If
@@ -195,10 +212,12 @@ End Function
 ' Open the given text file.
 '
 ' pFile: File to open
-' pTab: True : Use tab delimiter
-' pSemicolon: True : Use semicolon delimiter
-' pComa: True : Use comma delimiter
-' pSpace: True : Use space delimiter
+' pBooksOpen (optional): Number of open files, it is increased if the process ends successfully
+' pFileNew (optional): File copy as txt (when opening csv files)
+' pTab (optional): True = Use tab delimiter
+' pSemicolon (optional): True = Use semicolon delimiter
+' pComa (optional): True = Use comma delimiter
+' pSpace (optional): True = Use space delimiter
 '
 ' RETURN: Excel > Boolean
 '         CSV   > Full path of the file
@@ -206,10 +225,13 @@ End Function
 '
 Public Function ExcelOpen(ByVal pFile As String, _
                           Optional ByRef pBooksOpen As Long = 0, _
+                          Optional ByRef pFileNew As String = "", _
                           Optional ByVal pTab As Boolean = False, _
                           Optional ByVal pSemicolon As Boolean = False, _
                           Optional ByVal pComa As Boolean = False, _
-                          Optional ByVal pSpace As Boolean = False) As Variant
+                          Optional ByVal pSpace As Boolean = False) As Boolean
+
+    Const ARRAY_LENGTH As Long = 300
 
     On Error GoTo errHandler
 
@@ -223,29 +245,36 @@ Public Function ExcelOpen(ByVal pFile As String, _
         Exit Function
     End If
 
-    ' CSV file
+    ' CSV/TXT file
     If extension = "csv" Then
-        pFile = Left(pFile, Len(pFile) - 3) & "txt"
-        If FileExists(pFile) Then FileDelete (pFile)
-        Call FileCopy(pFile, pFile)
-    Else
-        ExcelOpen = "-1"
+        pFileNew = Left(pFile, Len(pFile) - 3) & "txt"
+        If FileExists(pFileNew) Then FileDelete (pFileNew)
+        Call FileCopy(pFile, pFileNew)
+        pFile = pFileNew
+    ElseIf extension <> "txt" Then
         Exit Function
     End If
 
-    ExcelOpen = pFile
+    ' An array containing parse information for individual columns of data.
+    ' The first element is the column number, and the second element is then constants
+    ' (XlColumnDataType) specifying how the column is parsed. We use 2 (xlTextFormat)
+    ' to avoid data loss when parsing codes starting with 0.
+    Dim myArray(0 To ARRAY_LENGTH) As Variant
+    Dim i As Long
+    For i = 0 To ARRAY_LENGTH
+        myArray(i) = Array(i + 1, 2)
+    Next
 
-    Dim myArray As Variant: Set myArray = ArrayInitialize(300, 2)
-
+    ' Open the file
     Workbooks.OpenText FileName:=pFile, _
                        StartRow:=1, DataType:=xlDelimited, TextQualifier:=xlDoubleQuote, _
                        ConsecutiveDelimiter:=True, Tab:=pTab, Semicolon:=pSemicolon, Comma:=pComa, Space:=pSpace, Other:=False, _
                        fieldInfo:=myArray, Local:=True
 
     pBooksOpen = pBooksOpen + 1
+    ExcelOpen = True
     Exit Function
 errHandler:
-    ExcelOpen = "-1"
 End Function
 
 
@@ -402,7 +431,7 @@ End Function
 '
 ' pPath: Folder's parent path
 ' pName: Folder's name
-' pWithDateTime (Optional): Add timestamp to folder's name
+' pWithDateTime (optional): Add timestamp to folder's name
 '
 ' RETURN: String, OK  > Folder full path
 '                 NOK > ""
@@ -413,7 +442,7 @@ Public Function FolderCreate(ByVal pPath As String, _
 
     On Error GoTo errHandler
 
-    If Right(pPath, 1) <> Application.PathSeparator Then pPath = pPath & Application.PathSeparator
+    pPath = FolderEndingDelimiter(pPath)
 
     If pWithDateTime Then pName = Format(Date, "YYYYMMDD") & "_" & Format(Time, "HHMM") & "_" & pName
 
@@ -434,7 +463,7 @@ End Function
 '
 Public Function FolderDelete(ByVal pPath As String) As Boolean
     On Error Resume Next
-        If Right(pPath, 1) <> Application.PathSeparator Then pPath = pPath & Application.PathSeparator
+        pPath = FolderEndingDelimiter(pPath)
         Kill pPath & "*.*"
         RmDir pPath
         FolderDelete = True
@@ -457,10 +486,40 @@ Public Function FolderFiles(ByVal pPath As String) As Collection
     Dim file As String: file = Dir(pPath)
 
     Do While file <> ""
-        FolderFiles.add Directorio & file
+        FolderFiles.Add Directorio & file
         file = Dir()
     Loop
 errHandler:
+End Function
+
+
+'
+' Check if directory path ends with 'PathSeparator'.
+'
+' pPath: path to validate
+'
+' RETURN: Given directory. If it has not the ending delimiter, we add it
+'
+Public Function FolderEndingDelimiter(ByVal pPath As String) As String
+
+    If Right(pPath, 1) <> Application.PathSeparator Then pPath = pPath & Application.PathSeparator
+
+    FolderEndingDelimiter = pPath
+End Function
+
+
+'
+' Get current date time.
+'
+' pFormatDate (optional): Date format
+' pFormatTime (optional): Time format
+'
+' RETURN: Date time with given format
+'
+Public Function GetDateTime(Optional ByVal pFormatDate As String = "yyyMMdd", _
+                            Optional ByVal pFormatTime As String = "HHmm") As String
+
+    GetDateTime = Format(Date, pFormatDate) & "_" & Format(Time, pFormatTime)
 End Function
 
 
@@ -493,6 +552,7 @@ End Function
 ' Trim a string and convert it to lower case.
 '
 ' pText: Text
+' pReplaceSpaceWithUnderscore (optional): Replace spaces with underscores
 '
 ' RETURN: Processed text
 '
@@ -573,6 +633,7 @@ End Function
 ' pSheet: Sheet where is the field to search
 ' pName: Text to search
 ' pRow (optional): Row where the text must be
+' pMessage (optional): If different to 'na', store the fields name if missing
 '
 ' RETURN:  n > Column index position
 '         -1 > Not Found
@@ -863,6 +924,8 @@ End Sub
 '
 ' Raise exception with a custom mesasge.
 '
+' pMessage (optional): Exceptopn message
+'
 Public Sub Throw(Optional ByVal pMessage As String = "")
     If pMessage <> "" Then Err.Description = pMessage
     Err.Raise 1
@@ -886,10 +949,10 @@ Function ToCollection(ParamArray pArray() As Variant) As Collection
     For Each i In pArray
         If TypeOf i Is Collection Or IsArray(i) Then
             For Each j In i
-                ToCollection.add j
+                ToCollection.Add j
             Next j
         Else
-            ToCollection.add i
+            ToCollection.Add i
         End If
     Next i
 End Function
@@ -923,29 +986,29 @@ End Function
 ' Unzip a file.
 '
 ' pFile: Input file to unzip
-' pPathOutput (optional): Output folder
+' pPath (optional): Output folder
 '
 ' RETURN: True  > OK
 '         False > NOK
 '
 Public Function Unzip(ByVal pFile As String, _
-                      Optional ByVal pPathOutput As String = "") As Boolean
+                      Optional ByVal pPath As String = "") As Boolean
 
     Dim file As Variant: file = pFile
-    Dim pathOutput As Variant
 
-    If pPathOutput = "" Then
-        pathOutput = Left(pFile, Len(pFile) - Len(FileExtension(pFile)) - 1) & Application.PathSeparator
-        If Dir(pathOutput, vbDirectory) = "" Then MkDir (pathOutput)
+    If pPath = "" Then
+        pPath = Left(pFile, Len(pFile) - Len(FileExtension(pFile)) - 1) & Application.PathSeparator
+        If Dir(pPath, vbDirectory) = "" Then MkDir (pPath)
     Else
-        If Right(pathOutput, 1) <> Application.PathSeparator Then pathOutput = pathOutput & Application.PathSeparator
+        pPath = FolderEndingDelimiter(pPath)
     End If
 
     On Error GoTo ErrorHandler
 
     Dim app As Object: Set app = CreateObject("Shell.Application")
-    app.Namespace(pathOutput).CopyHere app.Namespace(file).items
+    app.Namespace(pPath).CopyHere app.Namespace(file).items
 
     Unzip = True
 ErrorHandler:
 End Function
+

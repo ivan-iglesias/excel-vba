@@ -1,5 +1,6 @@
 Option Explicit
 
+
 '
 ' Store the configuration sheet data into a collection. Due to it's simplicity,
 ' we do not perform any kind of validation or error handler
@@ -35,14 +36,14 @@ Public Function ReadConfiguration(ByVal pFileName As String, _
 
         ' Format path variables
         If key = "PATH_PROJECT" Then
-            If Right(value, 1) <> "\" Then value = value & "\"
+            value = FolderEndingDelimiter(value)
 
         ElseIf Left(key, 4) = "PATH" Then
-            If Left(value, 1) = "\" Then value = Right(value, Len(value) - 1)
+            If Left(value, 1) = Application.PathSeparator Then value = Right(value, Len(value) - 1)
             value = ReadConfiguration.item("PATH_PROJECT") & value
         End If
 
-        ReadConfiguration.add value, key
+        ReadConfiguration.Add value, key
 
         line = line + 1
     Loop
@@ -65,10 +66,10 @@ Public Function FilesExists(ByRef pConfig As Collection, _
         file = pConfig(key)
 
         If Not FileExists(file) Then
-            file = SelectFile("Select the file '" & FileName(file) & "' with key '" & key & "'")
+            file = SelectFile("Could not find the file with key '" & key & "', select one")
             If file = "" Then Exit Function
             pConfig.Remove (key)
-            pConfig.add file, key
+            pConfig.Add file, key
         End If
     Next
 
