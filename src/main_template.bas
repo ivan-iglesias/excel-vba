@@ -65,7 +65,7 @@ Private Function GetData(ByVal pFileName As String, _
         line = line + 1
     Loop
 
-    GetDistricts = True
+    GetData = True
     Exit Function
 errHandler:
     Call ShowError("Error in GetData.", pErr:=Err)

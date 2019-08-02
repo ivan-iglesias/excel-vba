@@ -628,6 +628,29 @@ End Function
 
 
 '
+' Concatenate a range of cells.
+'
+' pRange: Range of cells to concatenate
+' pDelimiter (optional): Delimiter between values
+'
+' RETURN: String
+'
+Public Function RangeToString(ByVal pRange As Range, _
+                              Optional ByVal pDelimiter As String = ",") As String
+
+    Dim item As Variant
+
+    For Each item In pRange
+        RangeToString = RangeToString & item.value & pDelimiter
+    Next
+
+    If RangeToString <> "" Then
+        RangeToString = Left(RangeToString, Len(RangeToString) - Len(pDelimiter))
+    End If
+End Function
+
+
+'
 ' Returns the column index position of a field.
 '
 ' pSheet: Sheet where is the field to search
@@ -732,7 +755,7 @@ Public Function SearchSheet(ByVal pWorkbook As Workbook, _
                             ByVal pSheetName As String, _
                             Optional ByVal pInitialize As Boolean = True) As Worksheet
 
-    Dim idx As Long: idx = SheetIndexPosition(pWorkbook, pName)
+    Dim idx As Long: idx = SheetIndexPosition(pWorkbook, pSheetName)
 
     If idx = -1 Then Exit Function
 
@@ -1011,4 +1034,3 @@ Public Function Unzip(ByVal pFile As String, _
     Unzip = True
 ErrorHandler:
 End Function
-
