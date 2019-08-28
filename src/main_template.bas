@@ -2,7 +2,6 @@ Option Explicit
 
 ' Module constants
 Const LINE_HEADER = 1
-Const LINE_DATA = 1
 
 ' Module variables
 Private LOG As Collection
@@ -20,7 +19,7 @@ Public Sub MainTemplate()
 
     Call EnableOptimization
 
-    If Not FilesExists(CONFIG, Array("PATH_DISTRICTS")) Then EndProcess
+    If Not CheckIfFilesExists(CONFIG, Array("PATH_DISTRICTS")) Then EndProcess
 
 
     ' Get input data from file

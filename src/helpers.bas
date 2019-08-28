@@ -1,6 +1,5 @@
 Option Explicit
 
-
 '
 ' Create an array of a given length.
 '
@@ -24,7 +23,6 @@ Public Function ArrayInitialize(ByVal pLength As Long, _
     ArrayInitialize = myArray
 End Function
 
-
 '
 ' Join array values.
 '
@@ -38,7 +36,6 @@ Public Function ArrayToString(ByRef pArray() As Variant, _
 
     ArrayToString = Join(pArray, pDelimiter)
 End Function
-
 
 '
 ' Join values from a collection.
@@ -62,7 +59,6 @@ Public Function CollectionToString(ByVal pCollection As Collection, _
     End If
 End Function
 
-
 '
 ' Join two collections.
 '
@@ -78,7 +74,6 @@ Public Sub CollectionMerge(ByRef collectionA As Collection, _
         collectionA.Add collectionB.item(i)
     Next i
 End Sub
-
 
 '
 ' Return a specific day of the given year-week.
@@ -101,7 +96,6 @@ Public Function DayFromWeek(ByVal pYear As Long, _
     DayFromWeek = DateAdd("ww", pWeek - 1, temp)
 End Function
 
-
 '
 ' Draw a border to the given range.
 '
@@ -115,7 +109,6 @@ Public Sub DrawRangeBorder(ByVal pRange As Range)
         .Borders.Weight = xlThin
     End With
 End Sub
-
 
 '
 ' Enable-disable excel options to improve the performance.
@@ -131,7 +124,6 @@ Public Sub EnableOptimization(Optional ByVal pIsOn As Boolean = True)
     Application.CutCopyMode = False
 End Sub
 
-
 '
 ' End the current process. It usually happens when I don't select a required file.
 ' Close the open books without saving the changes.
@@ -146,7 +138,6 @@ Public Sub EndProcess(Optional ByVal pNumberBooks As Long = 0)
     Call EnableOptimization(False)
     End
 End Sub
-
 
 '
 ' Close the last 'pNumberBooks' workbooks.
@@ -179,7 +170,6 @@ Public Function ExcelClose(ByRef pNumberBooks As Long, _
 errHandler:
 End Function
 
-
 '
 ' Create a new excel file.
 '
@@ -199,14 +189,13 @@ Public Function ExcelCreate(ByVal pFile As String, _
     If pNumberSheets > 0 Then
         Application.SheetsInNewWorkbook = pNumberSheets
         Application.Workbooks.Add
-        Workbooks(idxExcel).SaveAs FileName:=pFile
+        Workbooks(idxExcel).SaveAs fileName:=pFile
         ExcelCreate = True
     End If
 
     Exit Function
 errHandler:
 End Function
-
 
 '
 ' Open the given text file.
@@ -219,9 +208,8 @@ End Function
 ' pComa (optional): True = Use comma delimiter
 ' pSpace (optional): True = Use space delimiter
 '
-' RETURN: Excel > Boolean
-'         CSV   > Full path of the file
-'         TXT   > Full path of the file
+' RETURN: True  > OK
+'         False > NOK
 '
 Public Function ExcelOpen(ByVal pFile As String, _
                           Optional ByRef pBooksOpen As Long = 0, _
@@ -235,11 +223,11 @@ Public Function ExcelOpen(ByVal pFile As String, _
 
     On Error GoTo errHandler
 
-    Dim extension As String: extension = LCase(FileExtension(pFile))
+    Dim extension As String: extension = LCase(GetFileExtension(pFile))
 
     ' Excel file
     If extension = "xls" Or extension = "xlsx" Then
-        Workbooks.Open FileName:=pFile, UpdateLinks:=xlUpdateLinksAlways ', corruptload:=xlRepairFile
+        Workbooks.Open fileName:=pFile, UpdateLinks:=xlUpdateLinksAlways ', corruptload:=xlRepairFile
         pBooksOpen = pBooksOpen + 1
         ExcelOpen = True
         Exit Function
@@ -248,7 +236,7 @@ Public Function ExcelOpen(ByVal pFile As String, _
     ' CSV/TXT file
     If extension = "csv" Then
         pFileNew = Left(pFile, Len(pFile) - 3) & "txt"
-        If FileExists(pFileNew) Then FileDelete (pFileNew)
+        If ExistsFile(pFileNew) Then FileDelete (pFileNew)
         Call FileCopy(pFile, pFileNew)
         pFile = pFileNew
     ElseIf extension <> "txt" Then
@@ -266,9 +254,9 @@ Public Function ExcelOpen(ByVal pFile As String, _
     Next
 
     ' Open the file
-    Workbooks.OpenText FileName:=pFile, _
+    Workbooks.OpenText fileName:=pFile, _
                        StartRow:=1, DataType:=xlDelimited, TextQualifier:=xlDoubleQuote, _
-                       ConsecutiveDelimiter:=True, Tab:=pTab, Semicolon:=pSemicolon, Comma:=pComa, Space:=pSpace, Other:=False, _
+                       ConsecutiveDelimiter:=False, Tab:=pTab, Semicolon:=pSemicolon, Comma:=pComa, Space:=pSpace, Other:=False, _
                        fieldInfo:=myArray, Local:=True
 
     pBooksOpen = pBooksOpen + 1
@@ -276,7 +264,6 @@ Public Function ExcelOpen(ByVal pFile As String, _
     Exit Function
 errHandler:
 End Function
-
 
 '
 ' Export an excell file to access
@@ -303,6 +290,17 @@ Public Sub ExcelToAccess(ByVal pWorkbook As Workbook, _
     Set objAccess = Nothing
 End Sub
 
+'
+' Check if exists a file.
+'
+' pFile: File's full path to check
+'
+' RETURN: True  > Exists
+'         False > Not exists
+'
+Public Function ExistsFile(ByVal pFile As String) As Boolean
+    If Dir(pFile) <> "" Then ExistsFile = True
+End Function
 
 '
 ' Check if given key exists in a collection.
@@ -322,7 +320,6 @@ Public Function ExistsKey(ByRef pCollection As Collection, _
 errHandler:
 End Function
 
-
 '
 ' Copy a file.
 '
@@ -337,7 +334,6 @@ Public Sub FileCopy(ByVal pSource As String, _
     xlobj.CopyFile pSource, pDestination, True
     Set xlobj = Nothing
 End Sub
-
 
 '
 ' Create a file with the the given lines.
@@ -359,7 +355,6 @@ Public Sub FileCreate(ByVal pDestination As String, _
     End If
 End Sub
 
-
 '
 ' Delete a file.
 '
@@ -375,56 +370,6 @@ Public Function FileDelete(ByVal pFile As String) As Boolean
     FileDelete = True
 errHandler:
 End Function
-
-
-'
-' Check if exists a file.
-'
-' pFile: File's full path to check
-'
-' RETURN: True  > Exists
-'         False > Not exists
-'
-Public Function FileExists(ByVal pFile As String) As Boolean
-    If Dir(pFile) <> "" Then FileExists = True
-End Function
-
-
-'
-' Get the extension from file's full path.
-'
-' pFile: File full path
-'
-' RETURN: String
-'
-Public Function FileExtension(ByVal pFile As String) As String
-    FileExtension = Right(pFile, Len(pFile) - InStrRev(pFile, "."))
-End Function
-
-
-'
-' Get the file name from its full path.
-'
-' pFile: File full path
-'
-' RETURN: String
-'
-Public Function FileName(ByVal pFile As String) As String
-    FileName = Right(pFile, Len(pFile) - InStrRev(pFile, Application.PathSeparator))
-End Function
-
-
-'
-' Get the file path from its full path.
-'
-' pFile: File full path
-'
-' RETURN: String
-'
-Public Function FilePath(ByVal pFile As String) As String
-    FilePath = Left(pFile, InStrRev(pFile, Application.PathSeparator))
-End Function
-
 
 '
 ' Create a new excel file.
@@ -455,7 +400,6 @@ errHandler:
     FolderCreate = ""
 End Function
 
-
 '
 ' Delete folder and it's content.
 '
@@ -469,29 +413,6 @@ Public Function FolderDelete(ByVal pPath As String) As Boolean
         FolderDelete = True
     On Error GoTo 0
 End Function
-
-
-'
-' Get the files of a given folder.
-'
-' pPath: Folder's path
-'
-' RETURN: Collection of files
-'
-Public Function FolderFiles(ByVal pPath As String) As Collection
-    Set FolderFiles = New Collection
-
-    On Error GoTo errHandler
-
-    Dim file As String: file = Dir(pPath)
-
-    Do While file <> ""
-        FolderFiles.Add Directorio & file
-        file = Dir()
-    Loop
-errHandler:
-End Function
-
 
 '
 ' Check if directory path ends with 'PathSeparator'.
@@ -507,7 +428,6 @@ Public Function FolderEndingDelimiter(ByVal pPath As String) As String
     FolderEndingDelimiter = pPath
 End Function
 
-
 '
 ' Get current date time.
 '
@@ -522,6 +442,59 @@ Public Function GetDateTime(Optional ByVal pFormatDate As String = "yyyMMdd", _
     GetDateTime = Format(Date, pFormatDate) & "_" & Format(Time, pFormatTime)
 End Function
 
+'
+' Get the extension from file's full path.
+'
+' pFile: File full path
+'
+' RETURN: String
+'
+Public Function GetFileExtension(ByVal pFile As String) As String
+    GetFileExtension = Right(pFile, Len(pFile) - InStrRev(pFile, "."))
+End Function
+
+'
+' Get the file name from its full path.
+'
+' pFile: File full path
+'
+' RETURN: String
+'
+Public Function GetFileName(ByVal pFile As String) As String
+    GetFileName = Right(pFile, Len(pFile) - InStrRev(pFile, Application.PathSeparator))
+End Function
+
+'
+' Get the file path from its full path.
+'
+' pFile: File full path
+'
+' RETURN: String
+'
+Public Function GetFilePath(ByVal pFile As String) As String
+    GetFilePath = Left(pFile, InStrRev(pFile, Application.PathSeparator))
+End Function
+
+'
+' Get the files of a given folder.
+'
+' pPath: Folder's path
+'
+' RETURN: Collection of files
+'
+Public Function GetFolderFiles(ByVal pPath As String) As Collection
+    Set GetFolderFiles = New Collection
+
+    On Error GoTo errHandler
+
+    Dim file As String: file = Dir(pPath)
+
+    Do While file <> ""
+        GetFolderFiles.Add pPath & file
+        file = Dir()
+    Loop
+errHandler:
+End Function
 
 '
 ' Check if workbook is open.
@@ -532,21 +505,20 @@ End Function
 '         False > Close
 '
 Function IsExcelOpen(ByVal pFile As String) As Boolean
-    Dim FileName As String
+    Dim fileName As String
     Dim wb As Variant
 
     On Error Resume Next
 
-    FileName = LCase(FileName(pFile))
+    fileName = LCase(GetFileName(pFile))
 
     For Each wb In Workbooks
-        If LCase(wb.Name) = FileName Then
+        If LCase(wb.Name) = fileName Then
             ExcelIsOpen = True
             Exit Function
         End If
     Next wb
 End Function
-
 
 '
 ' Trim a string and convert it to lower case.
@@ -570,7 +542,6 @@ Public Function Normalize(ByVal pText As String, _
     If pReplaceSpaceWithUnderscore Then Normalize = Replace(Normalize, " ", "_")
 End Function
 
-
 '
 ' Get the column letter for to the given number.
 '
@@ -581,7 +552,6 @@ End Function
 Public Function NumberToLetter(ByVal pNumber As Long) As String
    NumberToLetter = Replace(Cells(1, pNumber).Address(True, False), "$1", "")
 End Function
-
 
 '
 ' Returns a new string that right-aligns the characters in this instance by padding
@@ -604,7 +574,6 @@ Public Function PadLeft(ByVal pText As String, _
     PadLeft = pText
 End Function
 
-
 '
 ' Returns a new string that left-aligns the characters in this instance by padding
 ' them on the right with a specified character, for a specified total length.
@@ -625,7 +594,6 @@ Public Function PadRight(ByVal pText As Variant, _
 
     PadLeft = pText
 End Function
-
 
 '
 ' Concatenate a range of cells.
@@ -648,7 +616,6 @@ Public Function RangeToString(ByVal pRange As Range, _
         RangeToString = Left(RangeToString, Len(RangeToString) - Len(pDelimiter))
     End If
 End Function
-
 
 '
 ' Returns the column index position of a field.
@@ -690,7 +657,6 @@ Public Function SearchColumn(ByVal pSheet As Worksheet, _
         pMessage = IIf(pMessage = "", pName, pMessage & ", " & pName)
     End If
 End Function
-
 
 '
 ' Returns the column index position of a field.
@@ -764,7 +730,6 @@ Public Function SearchSheet(ByVal pWorkbook As Workbook, _
     If pInitialize Then Call SheetInitialize(SearchSheet)
 End Function
 
-
 '
 ' Show file dialog to select a file.
 '
@@ -808,7 +773,6 @@ Public Function SelectFile(ByVal pHeader As String, _
     SelectFile = IIf(files <> False, files, "")
 End Function
 
-
 '
 ' Show folder dialog to select a folder.
 '
@@ -829,7 +793,6 @@ Public Function SelectFolder(Optional ByVal pTitle As String = "") As String
         On Error GoTo 0
     End With
 End Function
-
 
 '
 ' Set a basic sheet style.
@@ -853,7 +816,6 @@ Public Sub SheetBasicStyle(ByVal pSheet As Worksheet, _
     If pColumnWidth > -1 Then pSheet.Columns().ColumnWidth = pColumnWidth
     If pRowHeight > -1 Then pSheet.Rows().RowHeight = pRowHeight
 End Sub
-
 
 '
 ' Return the index position of a given sheet name.
@@ -883,7 +845,6 @@ Public Function SheetIndexPosition(ByVal pWorkbook As Workbook, _
     Next i
 End Function
 
-
 '
 ' Activate the sheet, remove the filter mode and show the hidden columns.
 '
@@ -906,7 +867,6 @@ Public Sub SheetInitialize(ByVal pSheet As Worksheet)
     pSheet.Cells(1, "A").Select
 End Sub
 
-
 '
 ' Show error message.
 '
@@ -923,7 +883,6 @@ Public Sub ShowError(ByVal pMessage As String, _
     MsgBox pMessage, vbCritical
 End Sub
 
-
 '
 ' Show information message.
 '
@@ -932,7 +891,6 @@ End Sub
 Public Sub ShowInfo(ByVal pMessage As String)
     MsgBox pMessage, vbInformation
 End Sub
-
 
 '
 ' Show warning message.
@@ -943,7 +901,6 @@ Public Sub ShowWarning(ByVal pMessage As String)
     MsgBox pMessage, vbExclamation
 End Sub
 
-
 '
 ' Raise exception with a custom mesasge.
 '
@@ -953,7 +910,6 @@ Public Sub Throw(Optional ByVal pMessage As String = "")
     If pMessage <> "" Then Err.Description = pMessage
     Err.Raise 1
 End Sub
-
 
 '
 ' Join multiple values in a collection, where each one can be of different type.
@@ -980,6 +936,24 @@ Function ToCollection(ParamArray pArray() As Variant) As Collection
     Next i
 End Function
 
+'
+' Create a dictionary from a given collection.
+'
+' pCollection: Collection (List/Dictionary)
+'
+' RETURN: Collection (Dictionary)
+'
+Function ToDictionary(ByVal pCollection As Collection) As Collection
+    Dim i As Variant
+
+    Set ToDictionary = New Collection
+
+    For Each i In pCollection
+        If Not ExistsKey(ToDictionary, i) Then
+            ToDictionary.Add i, i
+        End If
+    Next
+End Function
 
 '
 ' Trim a string and convert it to lower case.
@@ -992,7 +966,6 @@ Public Function TrimLower(ByVal pText As String) As String
     TrimLower = LCase(Trim(pText))
 End Function
 
-
 '
 ' Trim a string and convert it to upper case.
 '
@@ -1003,7 +976,6 @@ End Function
 Public Function TrimUpper(ByVal pText As String) As String
     TrimUpper = UCase(Trim(pText))
 End Function
-
 
 '
 ' Unzip a file.
@@ -1020,7 +992,7 @@ Public Function Unzip(ByVal pFile As String, _
     Dim file As Variant: file = pFile
 
     If pPath = "" Then
-        pPath = Left(pFile, Len(pFile) - Len(FileExtension(pFile)) - 1) & Application.PathSeparator
+        pPath = Left(pFile, Len(pFile) - Len(GetFileExtension(pFile)) - 1) & Application.PathSeparator
         If Dir(pPath, vbDirectory) = "" Then MkDir (pPath)
     Else
         pPath = FolderEndingDelimiter(pPath)
@@ -1034,3 +1006,16 @@ Public Function Unzip(ByVal pFile As String, _
     Unzip = True
 ErrorHandler:
 End Function
+
+'
+' Write datetime value into cell.
+'
+Public Sub WriteDate(ByVal pCell As Object, _
+                     ByVal pValue As String)
+
+    If IsDate(pValue) And Len(pValue) = 10 Then
+        pCell = CDate(pValue)
+    Else
+        pCell = pValue
+    End If
+End Sub

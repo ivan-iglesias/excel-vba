@@ -49,23 +49,22 @@ Public Function ReadConfiguration(ByVal pFileName As String, _
     Loop
 End Function
 
-
 '
 ' Check if the given files in the configuration sheet exists. If not, It asks
-' the current location of each one.
+' the current location for each one.
 '
 ' RETURN: True  > All files exists
 '         False > NOK
 '
-Public Function FilesExists(ByRef pConfig As Collection, _
-                            pKeys As Variant) As Boolean
+Public Function CheckIfFilesExists(ByRef pConfig As Collection, _
+                                   pKeys As Variant) As Boolean
     Dim key As Variant
     Dim file As String
 
     For Each key In pKeys
         file = pConfig(key)
 
-        If Not FileExists(file) Then
+        If Not ExistsFile(file) Then
             file = SelectFile("Could not find the file with key '" & key & "', select one")
             If file = "" Then Exit Function
             pConfig.Remove (key)
@@ -73,5 +72,5 @@ Public Function FilesExists(ByRef pConfig As Collection, _
         End If
     Next
 
-    FilesExists = True
+    CheckIfFilesExists = True
 End Function
