@@ -52,7 +52,3 @@ var2 = 11
 var1 + var2   'result = 21.01
 var1 & var2   'result = 10.0111
 ```
-
-
-
-

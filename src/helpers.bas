@@ -1,5 +1,6 @@
 Option Explicit
 
+
 '
 ' Create an array of a given length.
 '
@@ -138,6 +139,20 @@ Public Sub EndProcess(Optional ByVal pNumberBooks As Long = 0)
     Call EnableOptimization(False)
     End
 End Sub
+
+'
+' Evaluate mathematical expression.
+'
+' RETURN: variant
+'
+Public Function Eval(ByVal pExpresion As String) As Variant
+    On Error GoTo ErrorHandler
+    pExpresion = Replace(pExpresion, ",", ".")
+    Eval = Evaluate(pExpresion)
+    If IsError(Eval) Then Eval = "error"
+    Exit Function
+ErrorHandler:
+End Function
 
 '
 ' Close the last 'pNumberBooks' workbooks.
@@ -497,6 +512,21 @@ errHandler:
 End Function
 
 '
+' Get the week number from a given date.
+'
+' RETURN: Week number
+'
+Public Function GetWeek(ByVal pDate As String, _
+                        Optional ByVal pPrefix As String = "") As String
+
+    If Len(pDate) = 8 Then
+        pDate = Left(pDate, 4) & "/" & Mid(pDate, 5, 2) & "/" & Right(pDate, 2)
+    End If
+
+    GetWeek = pPrefix & Format(CDate(pDate), "ww", vbMonday, vbFirstFourDays)
+End Function
+
+'
 ' Check if workbook is open.
 '
 ' pFile: File's full path to check
@@ -506,18 +536,18 @@ End Function
 '
 Function IsExcelOpen(ByVal pFile As String) As Boolean
     Dim fileName As String
-    Dim wb As Variant
+    Dim Wb As Variant
 
     On Error Resume Next
 
     fileName = LCase(GetFileName(pFile))
 
-    For Each wb In Workbooks
-        If LCase(wb.Name) = fileName Then
+    For Each Wb In Workbooks
+        If LCase(Wb.Name) = fileName Then
             ExcelIsOpen = True
             Exit Function
         End If
-    Next wb
+    Next Wb
 End Function
 
 '
@@ -618,6 +648,13 @@ Public Function RangeToString(ByVal pRange As Range, _
 End Function
 
 '
+' Round number to upper integer.
+'
+Public Function RoundUp(ByVal pNumber As Double) As Double
+    RoundUp = WorksheetFunction.RoundUp(pNumber, 0)
+End Function
+
+'
 ' Returns the column index position of a field.
 '
 ' pSheet: Sheet where is the field to search
@@ -631,14 +668,16 @@ End Function
 Public Function SearchColumn(ByVal pSheet As Worksheet, _
                              ByVal pName As String, _
                              Optional ByVal pRow As Long = 1, _
-                             Optional ByRef pMessage As String = "na") As Long
+                             Optional ByRef pMessage As String = "na", _
+                             Optional ByVal pContains As Boolean = False) As Long
 
     SearchColumn = -1
 
-    Dim pNameNormalize As String: pNameNormalize = Normalize(pName)
+    Dim nameNormalize As String: nameNormalize = Normalize(pName)
 
-    If pNameNormalize = "" Then Exit Function
+    If nameNormalize = "" Then Exit Function
 
+    Dim currentColumnName As String
     Dim pNumberColumns As Long
     Dim i As Long
 
@@ -646,7 +685,11 @@ Public Function SearchColumn(ByVal pSheet As Worksheet, _
 
     i = 1
     Do While Not IsEmpty(pSheet.Cells(pRow, i)) Or i <= pNumberColumns
-        If Normalize(pSheet.Cells(pRow, i).value) = pNameNormalize Then
+
+        currentColumnName = Normalize(pSheet.Cells(pRow, i).value)
+
+        If currentColumnName = nameNormalize Or _
+           (pContains And InStr(currentColumnName, nameNormalize) <> 0) Then
             SearchColumn = i
             Exit Function
         End If
