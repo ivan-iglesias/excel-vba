@@ -1,5 +1,26 @@
 Option Explicit
 
+'
+' Add value with the given key if the does not exists in the collection.
+'
+' pCollection: Collection in which to add the item
+' pKey: Value key
+' pValue (optional): If the item is nothing, add the key as value
+'
+' RETURN: True  > OK
+'         False > NOK
+'
+Public Function AddIfNotExists(ByRef pCollection As Collection, _
+                               ByVal pKey As String, _
+                               Optional ByVal pValue As Variant) As Boolean
+
+    If IsMissing(pValue) Then pValue = pKey
+
+    If Not ExistsKey(pCollection, pKey) Then
+        pCollection.Add pValue, pKey
+        AddIfNotExists = True
+    End If
+End Function
 
 '
 ' Create an array of a given length.
@@ -22,6 +43,10 @@ Public Function ArrayInitialize(ByVal pLength As Long, _
     Next
 
     ArrayInitialize = myArray
+End Function
+
+Public Function ArrayLen(pArray As Variant) As Long
+    ArrayLen = UBound(pArray) - LBound(pArray) + 1
 End Function
 
 '
@@ -49,10 +74,10 @@ End Function
 Public Function CollectionToString(ByVal pCollection As Collection, _
                                    Optional ByVal pDelimiter As String = ";") As String
 
-    Dim item As Variant
+    Dim Item As Variant
 
-    For Each item In pCollection
-        CollectionToString = CollectionToString & item & pDelimiter
+    For Each Item In pCollection
+        CollectionToString = CollectionToString & Item & pDelimiter
     Next
 
     If Len(CollectionToString) > 0 Then
@@ -72,7 +97,7 @@ Public Sub CollectionMerge(ByRef collectionA As Collection, _
     Dim i As Long
 
     For i = 1 To collectionB.Count
-        collectionA.Add collectionB.item(i)
+        collectionA.Add collectionB.Item(i)
     Next i
 End Sub
 
@@ -181,6 +206,38 @@ Public Function ExcelClose(ByRef pNumberBooks As Long, _
 
     pNumberBooks = pNumberBooks - n
     ExcelClose = True
+    Exit Function
+errHandler:
+End Function
+
+'
+' Close excel file by name.
+'
+' pName: File's name
+' pNumberBooks: Number of files currently open.
+' pSave: True: Save changes
+'        False: Not save changes
+'
+' RETURN: True  > OK
+'         False > NOK
+'
+Public Function ExcelCloseByName(ByVal pName As String, _
+                                 ByRef pNumberBooks As Long, _
+                                 Optional ByVal pSave As Boolean = False) As Boolean
+
+    On Error GoTo errHandler
+
+    Dim i As Long
+
+    For i = 1 To Workbooks.Count
+        If Workbooks(i).Name = pName Then
+            Workbooks(i).Close savechanges:=pSave
+            pNumberBooks = pNumberBooks - 1
+            Exit For
+        End If
+    Next
+
+    ExcelCloseByName = True
     Exit Function
 errHandler:
 End Function
@@ -330,7 +387,7 @@ Public Function ExistsKey(ByRef pCollection As Collection, _
                           ByVal pKey As Variant) As Boolean
 
     On Error GoTo errHandler
-    pCollection.item (pKey)
+    pCollection.Item (pKey)
     ExistsKey = True
 errHandler:
 End Function
@@ -536,18 +593,18 @@ End Function
 '
 Function IsExcelOpen(ByVal pFile As String) As Boolean
     Dim fileName As String
-    Dim Wb As Variant
+    Dim wb As Variant
 
     On Error Resume Next
 
     fileName = LCase(GetFileName(pFile))
 
-    For Each Wb In Workbooks
-        If LCase(Wb.Name) = fileName Then
+    For Each wb In Workbooks
+        If LCase(wb.Name) = fileName Then
             ExcelIsOpen = True
             Exit Function
         End If
-    Next Wb
+    Next wb
 End Function
 
 '
@@ -636,10 +693,10 @@ End Function
 Public Function RangeToString(ByVal pRange As Range, _
                               Optional ByVal pDelimiter As String = ",") As String
 
-    Dim item As Variant
+    Dim Item As Variant
 
-    For Each item In pRange
-        RangeToString = RangeToString & item.value & pDelimiter
+    For Each Item In pRange
+        RangeToString = RangeToString & Item.value & pDelimiter
     Next
 
     If RangeToString <> "" Then
@@ -648,10 +705,17 @@ Public Function RangeToString(ByVal pRange As Range, _
 End Function
 
 '
-' Round number to upper integer.
+' Round number.
 '
-Public Function RoundUp(ByVal pNumber As Double) As Double
-    RoundUp = WorksheetFunction.RoundUp(pNumber, 0)
+' pNumber: Number to be rounded
+' pDecimals: Number of decimals
+'
+' RETURN: Number
+'
+Public Function RoundUp(ByVal pNumber As Double, _
+                        Optional ByVal pDecimals As Long = 0) As Double
+
+    RoundUp = WorksheetFunction.RoundUp(pNumber, pDecimals)
 End Function
 
 '
@@ -673,9 +737,9 @@ Public Function SearchColumn(ByVal pSheet As Worksheet, _
 
     SearchColumn = -1
 
-    Dim nameNormalize As String: nameNormalize = Normalize(pName)
+    Dim pNameNormalize As String: pNameNormalize = Normalize(pName)
 
-    If nameNormalize = "" Then Exit Function
+    If pNameNormalize = "" Then Exit Function
 
     Dim currentColumnName As String
     Dim pNumberColumns As Long
@@ -688,8 +752,8 @@ Public Function SearchColumn(ByVal pSheet As Worksheet, _
 
         currentColumnName = Normalize(pSheet.Cells(pRow, i).value)
 
-        If currentColumnName = nameNormalize Or _
-           (pContains And InStr(currentColumnName, nameNormalize) <> 0) Then
+        If currentColumnName = pNameNormalize Or _
+           (pContains And InStr(currentColumnName, pNameNormalize) <> 0) Then
             SearchColumn = i
             Exit Function
         End If
@@ -947,7 +1011,7 @@ End Sub
 '
 ' Raise exception with a custom mesasge.
 '
-' pMessage (optional): Exceptopn message
+' pMessage (optional): Exception message
 '
 Public Sub Throw(Optional ByVal pMessage As String = "")
     If pMessage <> "" Then Err.Description = pMessage

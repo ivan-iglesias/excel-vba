@@ -6,7 +6,7 @@ Conjunto de funciones diseñadas para facilitar el desarrollo de macros Excel de
 A continuación listo los ficheros existentes, los cuales habrá que importar al proyecto en función de las necesidades.
 
 - ```helpers.bas```, fichero principal donde se encuentran la gran mayoria de funciones a usar.
-- ```helpers_word.bas``` (EN PROCESO), permite adjuntar imagenes, tablas y textos en documentos word.
+- ```helpers_word.bas```, permite adjuntar imagenes, tablas y textos en documentos word.
 - ```helpers_template.bas```, funciones empleadas cuando se hace uso de la plantilla general.
 - ```main_template.bas```, plantilla inicial para el desarrollo de una macro.
 
@@ -19,6 +19,7 @@ A continuación listo los ficheros existentes, los cuales habrá que importar al
 
 3. [Exportar a PDF](https://github.com/ivan-iglesias/excel-vba/blob/master/docs/exportar-pdf.md)
 
+4. [Data Types](https://github.com/ivan-iglesias/excel-vba/blob/master/docs/data-types.md)
 
 ## Changelog
 
