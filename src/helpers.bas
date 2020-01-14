@@ -74,10 +74,10 @@ End Function
 Public Function CollectionToString(ByVal pCollection As Collection, _
                                    Optional ByVal pDelimiter As String = ";") As String
 
-    Dim Item As Variant
+    Dim item As Variant
 
-    For Each Item In pCollection
-        CollectionToString = CollectionToString & Item & pDelimiter
+    For Each item In pCollection
+        CollectionToString = CollectionToString & item & pDelimiter
     Next
 
     If Len(CollectionToString) > 0 Then
@@ -97,7 +97,7 @@ Public Sub CollectionMerge(ByRef collectionA As Collection, _
     Dim i As Long
 
     For i = 1 To collectionB.Count
-        collectionA.Add collectionB.Item(i)
+        collectionA.Add collectionB.item(i)
     Next i
 End Sub
 
@@ -387,7 +387,7 @@ Public Function ExistsKey(ByRef pCollection As Collection, _
                           ByVal pKey As Variant) As Boolean
 
     On Error GoTo errHandler
-    pCollection.Item (pKey)
+    pCollection.item (pKey)
     ExistsKey = True
 errHandler:
 End Function
@@ -441,6 +441,37 @@ Public Function FileDelete(ByVal pFile As String) As Boolean
     Kill pFile
     FileDelete = True
 errHandler:
+End Function
+
+'
+' Create a copy of a file with unix format.
+'
+' pFileInput: File's full path to translate
+'
+' RETURN: OK  > New file path full path
+'         NOK > Empty
+'
+Public Function FileToUnix(ByVal pFileInput As String) As String
+    Dim text As String
+
+    FileToUnix = Replace(pFileInput, ".txt", "_unix.txt")
+
+On Error GoTo errHandler
+
+    Open pFileInput For Input As #1
+    Open FileToUnix For Output As #2
+
+    Do Until EOF(1)
+        Line Input #1, text
+        text = Replace(text, vbCrLf, Chr(10))
+        Print #2, Chr(10); text;
+    Loop
+
+    Close #2
+    Close #1
+    Exit Function
+errHandler:
+    FileToUnix = ""
 End Function
 
 '
@@ -558,6 +589,8 @@ Public Function GetFolderFiles(ByVal pPath As String) As Collection
     Set GetFolderFiles = New Collection
 
     On Error GoTo errHandler
+
+     pPath = FolderEndingDelimiter(pPath)
 
     Dim file As String: file = Dir(pPath)
 
@@ -693,10 +726,10 @@ End Function
 Public Function RangeToString(ByVal pRange As Range, _
                               Optional ByVal pDelimiter As String = ",") As String
 
-    Dim Item As Variant
+    Dim item As Variant
 
-    For Each Item In pRange
-        RangeToString = RangeToString & Item.value & pDelimiter
+    For Each item In pRange
+        RangeToString = RangeToString & item.Value & pDelimiter
     Next
 
     If RangeToString <> "" Then
@@ -750,7 +783,7 @@ Public Function SearchColumn(ByVal pSheet As Worksheet, _
     i = 1
     Do While Not IsEmpty(pSheet.Cells(pRow, i)) Or i <= pNumberColumns
 
-        currentColumnName = Normalize(pSheet.Cells(pRow, i).value)
+        currentColumnName = Normalize(pSheet.Cells(pRow, i).Value)
 
         If currentColumnName = pNameNormalize Or _
            (pContains And InStr(currentColumnName, pNameNormalize) <> 0) Then
@@ -792,7 +825,7 @@ Public Function SearchLine(ByVal pSheet As Worksheet, _
 
     i = 1
     Do While Not IsEmpty(pSheet.Cells(i, pColumn)) Or i <= pNumberRows
-        If Normalize(pSheet.Cells(i, pColumn).value) = pName Then
+        If Normalize(pSheet.Cells(i, pColumn).Value) = pName Then
             SearchLine = i
             Exit Do
         End If
@@ -905,15 +938,17 @@ End Function
 ' Set a basic sheet style.
 '
 ' pSheet: Sheet to apply the style
+' pFontSize (optional): Font's size
 ' pColumnWidth (optional): Columns width
 ' pRowHeight (optional): Rows height
 '
 Public Sub SheetBasicStyle(ByVal pSheet As Worksheet, _
+                           Optional pFontSize As Long = 11, _
                            Optional pColumnWidth As Long = -1, _
                            Optional pRowHeight As Long = -1)
 
     With pSheet
-        .Cells.Font.Size = 11
+        .Cells.Font.Size = pFontSize
         .Cells.Font.Name = "Calibri"
         .Columns().HorizontalAlignment = xlLeft
         .Columns().VerticalAlignment = xlCenter
