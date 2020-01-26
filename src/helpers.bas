@@ -634,7 +634,7 @@ Function IsExcelOpen(ByVal pFile As String) As Boolean
 
     For Each wb In Workbooks
         If LCase(wb.Name) = fileName Then
-            ExcelIsOpen = True
+            IsExcelOpen = True
             Exit Function
         End If
     Next wb
@@ -688,7 +688,7 @@ Public Function PadLeft(ByVal pText As String, _
                         ByVal pChar As String) As String
 
     If Len(pText) < pLength Then
-        pText = String(pLength - Len(CStr(pText)), pChar) & CStr(pText)
+        PadLeft = String(pLength - Len(CStr(pText)), pChar) & CStr(pText)
     End If
 
     PadLeft = pText
@@ -709,7 +709,7 @@ Public Function PadRight(ByVal pText As Variant, _
                          ByVal pChar As String) As String
 
     If Len(pText) < pLength Then
-        pText = CStr(pText) & String(pLength - Len(CStr(pText)), pChar)
+        PadRight = CStr(pText) & String(pLength - Len(CStr(pText)), pChar)
     End If
 
     PadLeft = pText

@@ -26,7 +26,7 @@ Public Sub MainTemplate()
     file = SelectFile("Select input file", "xls")
     If file = "" Then EndProcess (booksOpen)
     If Not ExcelOpen(file, booksOpen) Then EndProcess
-    If Not GetData(FileName(file), dctData) Then EndProcess (booksOpen)
+    If Not GetData(GetFileName(file), dctData) Then EndProcess (booksOpen)
     Call ExcelClose(booksOpen)
 
 
