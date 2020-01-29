@@ -45,6 +45,13 @@ Public Function ArrayInitialize(ByVal pLength As Long, _
     ArrayInitialize = myArray
 End Function
 
+'
+' Number of items from the given array.
+'
+' pArray: Array
+'
+' RETURN: Long
+'
 Public Function ArrayLen(pArray As Variant) As Long
     ArrayLen = UBound(pArray) - LBound(pArray) + 1
 End Function

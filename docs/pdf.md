@@ -1,4 +1,4 @@
-# Exportar a PDF
+## Exportar a PDF
 
 Para exportar un libro excel o rango a un fichero PDF, debemos hacer uso de función *ExportAsFixedFormat* desde el libro o rango deseado.
 
